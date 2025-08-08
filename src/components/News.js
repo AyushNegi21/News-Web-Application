@@ -4,17 +4,25 @@ import Spinner from './Spinner';
 import PropTypes from 'prop-types';
 
 export class News extends Component {
+  // Default props
   static defaultProps = {
     country: 'us',
     pageSize: 9,
     category: 'general'
-   };
+  };
 
-   static propTypes = {
+  // PropTypes for type checking
+  static propTypes = {
     country: PropTypes.string,
     pageSize: PropTypes.number,
     category: PropTypes.string
   };
+
+  // Utility function to capitalize first letter
+  capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
   constructor(props) {
     super(props);
     this.state = {
@@ -23,42 +31,56 @@ export class News extends Component {
       page: 1,
       totalResults: 0
     };
+    // ✅ Fixed: Correctly call the method from the same class
+    document.title = `News World - ${this.capitalizeFirstLetter(this.props.category)}`;
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     this.fetchNews();
   }
 
+  // Common method to fetch news
   fetchNews = async () => {
     this.setState({ loading: true });
+
     let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=5913d14edf89460bbb583b30416fea38&page=${this.state.page}&pageSize=${this.props.pageSize}`;
+    
     let data = await fetch(url);
     let parsedData = await data.json();
+
     this.setState({
-      article: parsedData.articles,
-      totalResults: parsedData.totalResults,
+      article: parsedData.articles || [],
+      totalResults: parsedData.totalResults || 0,
       loading: false
     });
   };
 
-  handleNextClick = async () => {
+  // Go to next page
+  handleNextClick = () => {
     if (this.state.page + 1 <= Math.ceil(this.state.totalResults / this.props.pageSize)) {
-      await this.setState({ page: this.state.page + 1 });
-      this.fetchNews();
+      this.setState(
+        (prevState) => ({ page: prevState.page + 1 }),
+        this.fetchNews
+      );
     }
   };
 
-  handlePrevClick = async () => {
+  // Go to previous page
+  handlePrevClick = () => {
     if (this.state.page > 1) {
-      await this.setState({ page: this.state.page - 1 });
-      this.fetchNews();
+      this.setState(
+        (prevState) => ({ page: prevState.page - 1 }),
+        this.fetchNews
+      );
     }
   };
 
   render() {
     return (
       <div className='container my-3'>
-        <h2 className='text-center'>News World Top Headlines</h2>
+        <h2 className='text-center' style={{ margin: '40px 0' }}>
+          News World - Top {this.capitalizeFirstLetter(this.props.category)} Headlines
+        </h2>
 
         {this.state.loading && <Spinner />}
 
@@ -87,6 +109,7 @@ export class News extends Component {
           >
             &larr; Previous
           </button>
+
           <button
             disabled={this.state.page + 1 > Math.ceil(this.state.totalResults / this.props.pageSize)}
             type="button"
