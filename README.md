@@ -47,5 +47,4 @@ cd news-app
 npm install
 
 Then run:
-bash
 npm start
