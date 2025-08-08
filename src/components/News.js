@@ -31,7 +31,6 @@ export class News extends Component {
       page: 1,
       totalResults: 0
     };
-    // ✅ Fixed: Correctly call the method from the same class
     document.title = `News World - ${this.capitalizeFirstLetter(this.props.category)}`;
   }
 
